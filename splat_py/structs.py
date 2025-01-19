@@ -11,21 +11,21 @@ class GSMetrics:
         self.num_gaussians = []
 
 
-class Image:
+class Image: #colmapdataにimages属性を追加するときに用いる
     """
     Image and Pose information
     """
 
     def __init__(
         self,
-        image,  # loaded image [HxWx3], 8bit, RGB
+        image,  # loaded image [HxWx3], 8bit, RGB->フィルタ後の画像
         camera_id,  # camera id associated with the image
         camera_T_world,  # world to camera transform matrix [4x4]
     ):
         self.image = image
         self.camera_id = camera_id
         self.camera_T_world = camera_T_world
-
+    
 
 class Camera:
     """

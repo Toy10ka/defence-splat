@@ -13,9 +13,10 @@ from splat_py.utils import (
 
 
 class SplatTrainer:
-    def __init__(self, gaussians, images, cameras, config):
+    def __init__(self, gaussians, images,images_origin,cameras, config):
         self.gaussians = gaussians
         self.images = images
+        self.images_origin = images_origin
         self.cameras = cameras
         self.config = config
 
@@ -40,11 +41,16 @@ class SplatTrainer:
         self.train_prob = torch.ones(
             len(self.train_split), dtype=torch.float32, device=self.gaussians.xyz.device
         ) / len(self.train_split)
-
+#追加
     def setup_test_images(self):
         for image_idx in range(len(self.images)):
+        #フィルタ後の画像を正規化
             self.images[image_idx].image = (
                 self.images[image_idx].image.to(torch.float32) / self.config.saturated_pixel_value
+            )
+        #元画像を正規化
+            self.images_origin[image_idx].image = (
+                self.images_origin[image_idx].image.to(torch.float32) / self.config.saturated_pixel_value
             )
 
     def reset_grad_accum(self):
@@ -301,7 +307,7 @@ class SplatTrainer:
             for test_img_idx in self.test_split:
                 test_camera_T_world = self.images[test_img_idx].camera_T_world
                 test_camera = self.cameras[self.images[test_img_idx].camera_id]
-
+        #testカメラ視点からのラスタライズ（画像合成）
                 (
                     test_image,
                     _,
@@ -319,7 +325,9 @@ class SplatTrainer:
                         3, device=self.gaussians.xyz.device, dtype=self.gaussians.xyz.dtype
                     ),
                 )
-                gt_image = self.images[test_img_idx].image.to(torch.device("cuda"))
+
+                #定期的なクオリティの評価が目的なので，psnr,ssim対象を元画像に変更
+                gt_image = self.images_origin[test_img_idx].image.to(torch.device("cuda"))
 
                 l2_loss = torch.nn.functional.mse_loss(test_image.clip(0, 1), gt_image)
                 psnr = -10 * torch.log10(l2_loss).item()
@@ -359,6 +367,7 @@ class SplatTrainer:
         )
         uv.retain_grad()
 
+        #学習途中にどれだけ正解に近づいているかのpsnrなので，対象はフィルタ後の画像に
         gt_image = self.images[image_idx].image.to(torch.device("cuda"))
         l1_loss = torch.nn.functional.l1_loss(image, gt_image)
 

@@ -63,12 +63,15 @@ else:
     gaussians.opacity = torch.nn.Parameter(gaussians.opacity)
     gaussians.rgb = torch.nn.Parameter(gaussians.rgb)
 
+#return images,images_origin
 images = colmap_data.get_images()
+images_origin = colmap_data.get_images_origin()
+
 cameras = colmap_data.get_cameras()
 
 
 start = time.time()
-trainer = SplatTrainer(gaussians, images, cameras, config)
+trainer = SplatTrainer(gaussians, images,images_origin,cameras, config)
 trainer.train()
 end = time.time()
 

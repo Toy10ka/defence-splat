@@ -72,8 +72,12 @@ class GaussianSplattingDataset:
         """
         get images from the dataset
         """
-
         return self.images
+#images=colmap_data.get_images()，trainer = SplatTrainer(~,images~)なのでoriginも追加
+    def get_images_origin(self):
+
+        return self.images_origin
+
 
     def get_cameras(self):
         """
@@ -140,7 +144,12 @@ class ColmapData(GaussianSplattingDataset):
         os.makedirs(output_dir, exist_ok=True)
 
         #image.bin.nameをimage_pathに
+
+        #元画像の属性(psnr,ssim計算ではこちらを用いる)
+        self.images_origin = []
+        #フィルタ後画像の属性(最適化はこちらを基準にする)
         self.images = []
+
         for _, image_info in self.image_info.items():
             #image_pathを作る
             image_path = os.path.join(
@@ -159,7 +168,7 @@ class ColmapData(GaussianSplattingDataset):
             filtered_image_BGR = cv2.cvtColor(filtered_image, cv2.COLOR_RGB2BGR) #cv.imwriteはBGRが前提
             cv2.imwrite(output_path, filtered_image_BGR) #パスに書き込み
 
-            #output_dirに保存したフィルタ済み画像output_pathを読み込み
+            #output_dirに保存したフィルタ済み画像output_pathを読み込み 
             filtered_image = cv2.imread(output_path)
             filtered_image = cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB)
 
@@ -176,6 +185,15 @@ class ColmapData(GaussianSplattingDataset):
                     camera_T_world=camera_T_world.to(self.device),
                 )
             )
+            #self.images_originに元画像(image)を追加
+            self.images_origin.append(
+                Image(
+                    image=torch.from_numpy(image).to(torch.uint8).to(self.device),
+                    camera_id=image_info.camera_id,
+                    camera_T_world=camera_T_world.to(self.device),
+                )
+            )
+
 #ここまで
         # load cameras
         cameras_path = os.path.join(colmap_directory_path, "sparse", "0", "cameras.bin")
