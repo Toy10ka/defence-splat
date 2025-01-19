@@ -131,15 +131,15 @@ class ColmapData(GaussianSplattingDataset):
             row += 1
 #ここから
          #images.binのパスを作る　"colmap_directory_path(bicycle~~)/sparse/0/images.bin"
-#image.bin.nameと一致している画像がimage_pathになり，image=cv2.imreadで読み込まれて，self.imageに格納
+         #image.bin.nameと一致している画像がimage_pathになり，image=cv2.imreadで読み込まれて，self.imageに格納
         image_info_path = os.path.join(colmap_directory_path, "sparse", "0", "images.bin")
         self.image_info = read_images_binary(image_info_path)
 
-#出力フォルダを作成 
+        #出力フォルダを作成 
         output_dir = "D:\Data\defence-dataset\processed_dataset1"
         os.makedirs(output_dir, exist_ok=True)
 
-#image.bin.nameをimage_pathに
+        #image.bin.nameをimage_pathに
         self.images = []
         for _, image_info in self.image_info.items():
             #image_pathを作る
@@ -148,7 +148,7 @@ class ColmapData(GaussianSplattingDataset):
                 f"images_{self.downsample_factor}",
                 image_info.name,
             )
-#image_pathから読んだ入力にフィルタをかける
+            #image_pathから読んだ入力にフィルタをかける
             imageBGR = cv2.imread(image_path)
             image = cv2.cvtColor(imageBGR, cv2.COLOR_BGR2RGB)
             #RGB画像(numpy)で計算
@@ -159,7 +159,7 @@ class ColmapData(GaussianSplattingDataset):
             filtered_image_BGR = cv2.cvtColor(filtered_image, cv2.COLOR_RGB2BGR) #cv.imwriteはBGRが前提
             cv2.imwrite(output_path, filtered_image_BGR) #パスに書き込み
 
-#output_dirに保存したフィルタ済み画像output_pathを読み込み
+            #output_dirに保存したフィルタ済み画像output_pathを読み込み
             filtered_image = cv2.imread(output_path)
             filtered_image = cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB)
 
@@ -168,7 +168,7 @@ class ColmapData(GaussianSplattingDataset):
             camera_T_world[:3, :3] = torch.tensor(qvec2rotmat(image_info.qvec), dtype=torch.float32)
             camera_T_world[:3, 3] = torch.tensor(image_info.tvec, dtype=torch.float32)
 
-#self.imagesにfiltered_imageを追加
+            #self.imagesにfiltered_imageを追加
             self.images.append(
                 Image(
                     image=torch.from_numpy(filtered_image).to(torch.uint8).to(self.device),

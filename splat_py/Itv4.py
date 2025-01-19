@@ -7,7 +7,6 @@ import cv2
 import matplotlib.pyplot as plt 
 import os 
 import json
-#フォルダ削除用モジュール
 import shutil
 #ハイパラ管理ファイル
 from splat_py.config import SplatConfig

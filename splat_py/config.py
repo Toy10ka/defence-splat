@@ -30,7 +30,7 @@ class yamlEnabled(object):
 @yamlEnabled("!SplatConfig")
 @dataclass
 class SplatConfig:
-    #閾値
+    #閾値設定
     IV_AVG_THRESHOLD : float = 0.08
     """Path to dataset directory"""
 
