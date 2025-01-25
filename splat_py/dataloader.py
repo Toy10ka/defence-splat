@@ -140,7 +140,7 @@ class ColmapData(GaussianSplattingDataset):
         self.image_info = read_images_binary(image_info_path)
 
         #出力フォルダを作成 
-        output_dir = "D:\Data\defence-dataset\processed_dataset1"
+        output_dir = "D:\Data\defence-dataset\processed_origin"
         os.makedirs(output_dir, exist_ok=True)
 
         #image.bin.nameをimage_pathに

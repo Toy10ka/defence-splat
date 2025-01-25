@@ -31,7 +31,7 @@ class yamlEnabled(object):
 @dataclass
 class SplatConfig:
     #閾値設定
-    IV_AVG_THRESHOLD : float = 0.08
+    IV_AVG_THRESHOLD : float = 98043985
     """Path to dataset directory"""
 
     dataset_path: str = "garden"
@@ -141,7 +141,7 @@ class SplatConfig:
     """delete gaussians with scale norm above this threshold"""
     max_scale_norm: float = 0.5
     """densify a fixed fraction of gaussians every iteration"""
-    use_fractional_densification: bool = True
+    use_fractional_densification: bool = False #True
     """front load densification - slower but slightly higher psnr"""
     use_adaptive_fractional_densification: bool = True
 
@@ -151,7 +151,7 @@ class SplatConfig:
     scale_norm_percentile: float = 0.99
 
     """densify gaussians over this threshold - only used if use_fractional_densification is False"""
-    uv_grad_threshold: float = 0.0002
+    uv_grad_threshold: float = 0.001 #0.0002
 
     """decrease scale of split gaussians by this factor"""
     split_scale_factor: float = 1.6
@@ -163,13 +163,21 @@ class SplatConfig:
 SplatConfigs = tyro.extras.subcommand_type_from_defaults(
     {
         "7k": SplatConfig(),  # default config is 7k
-        "30k": SplatConfig(
-            num_iters=30000,
-            adaptive_control_start=1500,
-            adaptive_control_end=27500,
-            adaptive_control_interval=300,
-            reset_opacity_end=27500,
-            use_background_end=28000,
+        "10k": SplatConfig(
+            num_iters=8500,
+            adaptive_control_start=750, 
+            adaptive_control_end=8000,  #-500
+            adaptive_control_interval=100,
+            reset_opacity_end=8000, #-500
+            use_background_end=8250, #-400
+        ),
+        "15k": SplatConfig(
+            num_iters=15000,
+            adaptive_control_start=750, 
+            adaptive_control_end=14000,  #-500
+            adaptive_control_interval=100,
+            reset_opacity_end=14000, #-500
+            use_background_end=14500, #-400
         ),
     }
 )

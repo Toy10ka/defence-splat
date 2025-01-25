@@ -23,11 +23,30 @@ def image_total_variation(image_tensor):
     elif image_tensor.dim() == 4:
         return torch.sum(torch.abs(image_tensor[:, :, :, :-1] - image_tensor[:, :, :, 1:])) + \
             torch.sum(torch.abs(image_tensor[:, :, :-1, :] - image_tensor[:, :, 1:, :]))
-            
+"""           
 #変動スコアの1要素平均
 def calc_iv_avg(itv,tensor):
     num_elements = tensor.numel()
     iv_avg = itv / num_elements
+    return iv_avg
+"""
+#変動スコアの1要素平均
+def calc_iv_avg(itv, tensor):
+    # テンソルの次元を取得
+    dims = tensor.dim()
+    if dims == 2:  # 2次元（高さ×幅のグレースケール画像など）
+        h, w = tensor.shape
+        num_variations = h * (w - 1) + (h - 1) * w
+    elif dims == 3:  # 3次元（RGB画像など、チャネル×高さ×幅）
+        c, h, w = tensor.shape
+        num_variations = c * (h * (w - 1) + (h - 1) * w)
+    elif dims == 4:  # 4次元（バッチサイズ×チャネル×高さ×幅）
+        b, c, h, w = tensor.shape
+        num_variations = b * c * (h * (w - 1) + (h - 1) * w)
+    else:
+        raise ValueError("Unsupported tensor dimension. Expected 2D, 3D, or 4D tensor.")
+        # 1変動あたりの平均を計算
+    iv_avg = itv / num_variations
     return iv_avg
 
 #画像の12分割と計算を行う関数
