@@ -66,12 +66,14 @@ else:
 #return images,images_origin
 images = colmap_data.get_images()
 images_origin = colmap_data.get_images_origin()
+#add
+images_clean = colmap_data.get_images_clean()
 
 cameras = colmap_data.get_cameras()
 
 
 start = time.time()
-trainer = SplatTrainer(gaussians, images,images_origin,cameras, config)
+trainer = SplatTrainer(gaussians, images,images_origin,images_clean,cameras, config)
 trainer.train()
 end = time.time()
 

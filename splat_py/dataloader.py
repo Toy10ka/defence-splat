@@ -11,9 +11,9 @@ from splat_py.read_colmap import (
 )
 from splat_py.utils import inverse_sigmoid, compute_initial_scale_from_sparse_points
 from splat_py.structs import Gaussians, Image, Camera
-
-#追加!
-from splat_py.Itv4 import divide_calc, image_total_variation, calc_iv_avg
+#追加
+from gaussian_splatting.splat_py.roi_filter import divide_calc, calculate_cdf 
+import statistics
 
 class GaussianSplattingDataset:
     """
@@ -78,7 +78,11 @@ class GaussianSplattingDataset:
 
         return self.images_origin
 
+#add
+    def get_images_clean(self):
 
+        return self.images_clean
+    
     def get_cameras(self):
         """
         get cameras from the dataset
@@ -133,14 +137,14 @@ class ColmapData(GaussianSplattingDataset):
                 point.rgb / 255.0 / 0.28209479177387814, dtype=torch.float32
             )
             row += 1
-#ここから
+#ここから変更
          #images.binのパスを作る　"colmap_directory_path(bicycle~~)/sparse/0/images.bin"
          #image.bin.nameと一致している画像がimage_pathになり，image=cv2.imreadで読み込まれて，self.imageに格納
         image_info_path = os.path.join(colmap_directory_path, "sparse", "0", "images.bin")
         self.image_info = read_images_binary(image_info_path)
 
         #出力フォルダを作成 
-        output_dir = "D:\Data\defence-dataset\processed_origin"
+        output_dir = "D:\Data\defence-dataset\processed_poison"
         os.makedirs(output_dir, exist_ok=True)
 
         #image.bin.nameをimage_pathに
@@ -149,6 +153,14 @@ class ColmapData(GaussianSplattingDataset):
         self.images_origin = []
         #フィルタ後画像の属性(最適化はこちらを基準にする)
         self.images = []
+        #add clean
+        self.images_clean =[]
+
+#準備
+        listy=[]
+        total_filter_count = 0  # 全データセットでのフィルタ適用回数
+        total_elements_count = 0  # 全データセットでの総要素数
+        iv_avg_all = []  # 全データセットのIV_AVG値を格納
 
         for _, image_info in self.image_info.items():
             #image_pathを作る
@@ -161,7 +173,14 @@ class ColmapData(GaussianSplattingDataset):
             imageBGR = cv2.imread(image_path)
             image = cv2.cvtColor(imageBGR, cv2.COLOR_BGR2RGB)
             #RGB画像(numpy)で計算
-            filtered_image = divide_calc(image,self.config.IV_AVG_THRESHOLD)
+            filtered_image, listx,filter_count, total_elements = divide_calc(image,self.config.IV_AVG_THRESHOLD,self.config.DIVISIONS)
+#情報の保持
+            total_filter_count += filter_count
+            total_elements_count += total_elements
+            # IV_AVGの値を収集
+            # iv_avg_all.extend([iv.item() for iv in listx])
+            iv_avg_all.extend(listx) 
+            listy.extend(listx)
 
             #output_pathを定義/保存
             output_path = os.path.join(output_dir, image_info.name)#input\name -> outdir\name
@@ -171,6 +190,17 @@ class ColmapData(GaussianSplattingDataset):
             #output_dirに保存したフィルタ済み画像output_pathを読み込み 
             filtered_image = cv2.imread(output_path)
             filtered_image = cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB)
+
+#add clean
+            # load clean image
+            image_path2 = os.path.join(
+                colmap_directory_path,
+                f"images_{self.downsample_factor}clean",
+                image_info.name,
+            )
+            image2 = cv2.imread(image_path2)
+            image_clean = cv2.cvtColor(image2, cv2.COLOR_BGR2RGB)
+
 
             # load transform
             camera_T_world = torch.eye(4)
@@ -193,8 +223,38 @@ class ColmapData(GaussianSplattingDataset):
                     camera_T_world=camera_T_world.to(self.device),
                 )
             )
+#add
+            self.images_clean.append(
+                Image(
+                    image=torch.from_numpy(image_clean).to(torch.uint8).to(self.device),
+                    camera_id=image_info.camera_id,
+                    camera_T_world=camera_T_world.to(self.device),
+                )
+            )
+        # 統計情報を計算
+        cdf_results = calculate_cdf(iv_avg_all)
+        mean = cdf_results["mean"]
+        std_dev = cdf_results["std_dev"]
+        thresholds = cdf_results["thresholds"]
 
-#ここまで
+        # 統計情報を出力
+        print(f"\niv_avgの平均値は {(sum(listy) / len(listy)):.4f}")
+        print(f"iv_avgの最大値は{max(listy):.4f},最小値は{min(listy):.4f}")
+        print(f"iv_avgの中央値は{statistics.median(listy)}")
+
+        print(f"\nIV_AVGの統計情報:")
+        print(f"- 平均値: {mean:.4f}")
+        print(f"- 標準偏差: {std_dev:.4f}")
+        print(f"- 上位5%閾値: {thresholds['top_5_percent']:.4f}")
+        print(f"- 上位10%閾値: {thresholds['top_10_percent']:.4f}")
+        print(f"- 下位5%閾値: {thresholds['bottom_5_percent']:.4f}")
+        print(f"- 下位10%閾値: {thresholds['bottom_10_percent']:.4f}")
+
+        #設定を表示
+        print(f"\nthreshold={self.config.IV_AVG_THRESHOLD},division={self.config.DIVISIONS}")
+        print(f"フィルタ適用: {total_filter_count}/{total_elements_count} 要素")
+    
+#ここまで変更
         # load cameras
         cameras_path = os.path.join(colmap_directory_path, "sparse", "0", "cameras.bin")
         cameras = read_cameras_binary(cameras_path)

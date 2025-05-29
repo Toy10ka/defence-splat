@@ -30,9 +30,10 @@ class yamlEnabled(object):
 @yamlEnabled("!SplatConfig")
 @dataclass
 class SplatConfig:
-    #閾値設定
-    IV_AVG_THRESHOLD : float = 98043985
-    """Path to dataset directory"""
+    #τ_TV
+    IV_AVG_THRESHOLD : float = 0.062
+    #N
+    DIVISIONS: float = 2
 
     dataset_path: str = "garden"
     """downsample factor for the images - if applicable"""
@@ -137,7 +138,7 @@ class SplatConfig:
     """delete gaussians with opacity below this threshold"""
     delete_opacity_threshold: float = 0.1
     """clone gaussians with scale below this threshold"""
-    clone_scale_threshold: float = 0.01
+    clone_scale_threshold: float = 0.01 #0.01
     """delete gaussians with scale norm above this threshold"""
     max_scale_norm: float = 0.5
     """densify a fixed fraction of gaussians every iteration"""
@@ -154,7 +155,7 @@ class SplatConfig:
     uv_grad_threshold: float = 0.001 #0.0002
 
     """decrease scale of split gaussians by this factor"""
-    split_scale_factor: float = 1.6
+    split_scale_factor: float = 1.6 #1.6
     """number of samples to split gaussians into"""
     num_split_samples: int = 2
 
@@ -174,7 +175,7 @@ SplatConfigs = tyro.extras.subcommand_type_from_defaults(
         "15k": SplatConfig(
             num_iters=15000,
             adaptive_control_start=750, 
-            adaptive_control_end=14000,  #-500
+            adaptive_control_end=14000,  #-500 
             adaptive_control_interval=100,
             reset_opacity_end=14000, #-500
             use_background_end=14500, #-400

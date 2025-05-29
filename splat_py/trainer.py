@@ -13,10 +13,11 @@ from splat_py.utils import (
 
 
 class SplatTrainer:
-    def __init__(self, gaussians, images,images_origin,cameras, config):
+    def __init__(self, gaussians, images,images_origin,images_clean, cameras, config):
         self.gaussians = gaussians
         self.images = images
         self.images_origin = images_origin
+        self.images_clean = images_clean
         self.cameras = cameras
         self.config = config
 
@@ -51,6 +52,10 @@ class SplatTrainer:
         #元画像を正規化
             self.images_origin[image_idx].image = (
                 self.images_origin[image_idx].image.to(torch.float32) / self.config.saturated_pixel_value
+            )
+        #cleanを正規化
+            self.images_clean[image_idx].image = (
+                self.images_clean[image_idx].image.to(torch.float32) / self.config.saturated_pixel_value
             )
 
     def reset_grad_accum(self):
@@ -327,7 +332,9 @@ class SplatTrainer:
                 )
 
                 #定期的なクオリティの評価が目的なので，psnr,ssim対象を元画像に変更
-                gt_image = self.images_origin[test_img_idx].image.to(torch.device("cuda"))
+                #汚染画像を入れるので一時的に変更
+                #gt_image = self.images_origin[test_img_idx].image.to(torch.device("cuda"))
+                gt_image = self.images_clean[test_img_idx].image.to(torch.device("cuda"))
 
                 l2_loss = torch.nn.functional.mse_loss(test_image.clip(0, 1), gt_image)
                 psnr = -10 * torch.log10(l2_loss).item()
