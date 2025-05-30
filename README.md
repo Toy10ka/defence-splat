@@ -1,8 +1,6 @@
 # Defence-Splat
+ Defence-Splatは、MITライセンスで公開されている [元の実装](https://github.com/joeyan/gaussian_splatting) を拡張し、敵対的摂動（Adversarial Perturbations）に対する防御評価を行うためのROIベースの画像フィルタリングを追加した実装です。
 
-[3D Gaussian Splatting for Real‑Time Radiance Field Rendering](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/) を拡張した実装です。
-
-このリポジトリはMITライセンスで公開されている [元の実装](https://github.com/joeyan/gaussian_splatting) を基に、敵対的摂動（Adversarial Perturbations）に対する防御評価を行うためのROIベースの画像フィルタリングを追加しています。
 
 ## 主な特徴
 
@@ -26,19 +24,13 @@
 
 
 ## 使用方法
-
-COLMAP形式のデータセットを用意します。
-
-* フル解像度の画像を`images`フォルダに、ダウンサンプリングした画像を`images_<N>`フォルダに、`sparse/0`フォルダには `cameras.bin`、`images.bin`、`points3D.bin` を配置します。
-* クリーンな参照画像は `images_<N>clean` に配置します。
-
 トレーニングの実行例（7,000回のイテレーションを使用）：
 
 ```bash
 python colmap_splat.py 7k --dataset_path <dataset_dir> --downsample_factor 4
 ```
 
-出力された指標とフィルタリングされた画像は `splat_output/` に保存されます。最終的なGaussianデータは `gaussians_final.pt` として保存され、最高テストPSNRが報告されます。
+出力された指標とフィルタリングされた画像は `splat_output/` に保存されます。
 
 ## ライセンス
 
