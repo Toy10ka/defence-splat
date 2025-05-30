@@ -1,5 +1,5 @@
 # Defence-Splat
- Defence-Splatは、MITライセンスで公開されている [元の実装](https://github.com/joeyan/gaussian_splatting) を拡張し、敵対的摂動（Adversarial Perturbations）に対する防御評価を行うためのROIベースの画像フィルタリングを追加した実装です。
+ Defence-Splatは、MITライセンスで公開されている [3DGS実装](https://github.com/joeyan/gaussian_splatting) を拡張し、敵対的摂動（Adversarial Perturbations）に対する防御評価を行うためのROIベースの画像フィルタリングを追加した実装です。
 
 
 ## 主な特徴
