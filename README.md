@@ -23,15 +23,6 @@
   * トレーニング時にはフィルター処理された画像を用い、PSNR/SSIM評価はクリーンな画像を参照して行われます。
 
 
-## 使用方法
-トレーニングの実行例（7,000回のイテレーションを使用）：
-
-```bash
-python colmap_splat.py 7k --dataset_path <dataset_dir> --downsample_factor 4
-```
-
-出力された指標とフィルタリングされた画像は `splat_output/` に保存されます。
-
 ## ライセンス
 
 本プロジェクトはMITライセンスに基づいて提供されています（詳細はLICENSEファイルを参照）。
