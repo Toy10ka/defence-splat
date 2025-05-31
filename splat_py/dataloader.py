@@ -12,8 +12,9 @@ from splat_py.read_colmap import (
 from splat_py.utils import inverse_sigmoid, compute_initial_scale_from_sparse_points
 from splat_py.structs import Gaussians, Image, Camera
 #追加
-from gaussian_splatting.splat_py.roi_filter import divide_calc, calculate_cdf 
+from splat_py.roi_filter import divide_calc, calculate_cdf 
 import statistics
+from pathlib import Path
 
 class GaussianSplattingDataset:
     """
@@ -144,11 +145,12 @@ class ColmapData(GaussianSplattingDataset):
         self.image_info = read_images_binary(image_info_path)
 
         #出力フォルダを作成 
-        output_dir = "D:\Data\defence-dataset\processed_poison"
+        current_dir = Path(__file__).resolve().parent
+        output_dir = current_dir.parent/"processed_poison"
+        output_dir.mkdir(parents=True, exist_ok=True)
         os.makedirs(output_dir, exist_ok=True)
 
         #image.bin.nameをimage_pathに
-
         #元画像の属性(psnr,ssim計算ではこちらを用いる)
         self.images_origin = []
         #フィルタ後画像の属性(最適化はこちらを基準にする)
